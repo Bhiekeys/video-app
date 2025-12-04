@@ -1,0 +1,7 @@
+{
+    "multiplayer": {
+      "enabled": true,
+      "port": 6172
+    }
+}
+  
