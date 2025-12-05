@@ -1,0 +1,345 @@
+/* Appointment Setup Container */
+.appointment-setup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  padding: 12px 24px 4px;
+  background-color: #FFFFFF;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Patient Info Panel */
+.patient-info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  width: 370px;
+  background-color: #FAFAFA;
+  border-radius: 12px;
+  box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.06), 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.patient-info-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.patient-info-panel-title {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.patient-info-panel-name {
+  font-family: Inter;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.56em;
+  color: #27272A;
+}
+
+.patient-info-panel-type {
+  font-family: Inter;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5em;
+  color: #323539;
+}
+
+.patient-info-panel-info-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 8px;
+  background-color: #FFFFFF;
+  border: 1px solid #E4E4E7;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.patient-info-panel-info-btn:hover {
+  background-color: #F4F4F5;
+}
+
+.patient-info-panel-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.patient-info-badge {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background-color: #F4F4F5;
+  border: 1px solid #E4E4E7;
+  border-radius: 6px;
+  font-family: Inter;
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 1.4em;
+  color: #27272A;
+}
+
+.priority-badge {
+  height: auto;
+}
+
+.checked-in-badge {
+  height: 32px;
+}
+
+.flag-icon-red {
+  width: 12px;
+  height: 12px;
+  background-color: #DC2626;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #2EBF43;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.patient-info-panel-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.patient-info-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-top: 1px solid #E4E4E7;
+}
+
+.patient-info-row:first-child {
+  border-top: none;
+}
+
+.patient-info-label {
+  width: 114.78px;
+  font-family: Inter;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4em;
+  color: #71717A;
+  flex-shrink: 0;
+}
+
+.patient-info-value {
+  flex: 1;
+  font-family: Inter;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4em;
+  color: #27272A;
+}
+
+/* Start Appointment Panel */
+.start-appointment-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  width: 370px;
+  background-color: #FFFFFF;
+  border-radius: 12px;
+}
+
+.start-appointment-title {
+  width: 100%;
+  height: 28px;
+  font-family: Inter;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.75em;
+  text-align: center;
+  color: #18181B;
+}
+
+.start-appointment-video-preview {
+  width: 100%;
+  height: 205.88px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #000000;
+  position: relative;
+}
+
+.start-appointment-video-preview img,
+.start-appointment-video-preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-preview-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror the video for natural selfie view */
+}
+
+.start-appointment-input {
+  width: 100%;
+  padding: 12px;
+  background-color: #FFFFFF;
+  border: 1px solid #E4E4E7;
+  border-radius: 6px;
+  font-family: Inter;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4em;
+  color: #27272A;
+}
+
+.start-appointment-input::placeholder {
+  color: #71717A;
+}
+
+.start-appointment-input:focus {
+  outline: none;
+  border-color: #005893;
+}
+
+.start-appointment-input + .start-appointment-input {
+  margin-top: 0;
+}
+
+.start-appointment-btn {
+  width: 100%;
+  padding: 8px 16px;
+  background-color: #005893;
+  border: none;
+  border-radius: 6px;
+  font-family: Inter;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.4em;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.start-appointment-btn:hover {
+  background-color: #004a7a;
+}
+
+.start-appointment-btn:active {
+  background-color: #003d66;
+}
+
+.start-appointment-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background-color: #F4F4F5;
+  border-radius: 12px;
+  box-shadow: 0px 4px 6px -2px rgba(0, 0, 0, 0.05), 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.control-btn-small {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  background-color: #E4E4E7;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.control-btn-small:hover {
+  background-color: #D4D4D8;
+}
+
+.control-btn-small svg {
+  width: 16px;
+  height: 16px;
+  stroke: #71717A;
+  fill: none;
+}
+
+.chevron-up-small {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10.67px;
+  height: 10.67px;
+  background-color: #3F3F46;
+  border-radius: 50%;
+}
+
+.device-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-family: Inter;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4em;
+  color: #71717A;
+}
+
+.status-dot-green {
+  width: 12px;
+  height: 12px;
+  background-color: #289144;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot-yellow {
+  width: 12px;
+  height: 12px;
+  background-color: #F59E0B;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot-red {
+  width: 12px;
+  height: 12px;
+  background-color: #DC2626;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.start-appointment-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.control-btn-small.muted {
+  background-color: #DC2626;
+}
+
+.control-btn-small.muted svg {
+  stroke: #FFFFFF;
+  fill: #FFFFFF;
+}
+

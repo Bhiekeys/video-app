@@ -1,4 +1,5 @@
 import { JitsiMeeting } from '@jitsi/react-sdk'
+import { useEffect } from 'react'
 
 interface JitsiMeetProps {
   roomName: string
@@ -9,87 +10,166 @@ interface JitsiMeetProps {
   }
   onApiReady?: (api: any) => void
   containerStyle?: React.CSSProperties
+  startWithAudioMuted?: boolean
+  startWithVideoMuted?: boolean
 }
 
 const APP_NAME = 'Migranium'
-const WATERMARK_SELECTORS = '.watermark, .leftwatermark, .rightwatermark, div.watermark.leftwatermark, div.watermark.rightwatermark, [class*="watermark"], [id*="watermark"]'
-const HIDE_STYLES = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; width: 0 !important; overflow: hidden !important;'
 
 export const JitsiMeet = ({ 
   roomName, 
   domain = 'meet.migranium.com',
   userInfo,
   onApiReady,
-  containerStyle
+  containerStyle,
+  startWithAudioMuted = false,
+  startWithVideoMuted = false
 }: JitsiMeetProps) => {
+  
+  // Inject CSS to hide pre-join screen and watermark
+  useEffect(() => {
+    const style = document.createElement('style')
+    style.textContent = `
+      .css-1dtlqni-content,
+      .premeeting-screen,
+      .css-1a5i9rv-container,
+      [class*="premeeting"],
+      [class*="prejoin"],
+      [class*="Prejoin"] {
+        display: none !important;
+      }
+      
+      /* Aggressively hide watermark */
+      .watermark,
+      .leftwatermark,
+      div.watermark,
+      a.watermark,
+      [class*="watermark"],
+      [class*="leftwatermark"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        width: 0 !important;
+        height: 0 !important;
+      }
+      
+      #jitsiConferenceFrame0 {
+        display: block !important;
+      }
+    `
+    document.head.appendChild(style)
+    
+    // Watch for watermark elements and hide them immediately
+    const observer = new MutationObserver((mutations) => {
+      const watermarks = document.querySelectorAll('[class*="watermark"], .watermark, .leftwatermark')
+      watermarks.forEach((el) => {
+        if (el instanceof HTMLElement) {
+          el.style.display = 'none'
+          el.style.visibility = 'hidden'
+          el.style.opacity = '0'
+          el.remove()
+        }
+      })
+    })
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    })
+    
+    return () => {
+      document.head.removeChild(style)
+      observer.disconnect()
+    }
+  }, [])
+
   const handleApiReady = (api: any) => {
     if (api) {
+      // Hide toolbar and filmstrip
       api.executeCommand('toggleToolbar', false)
       api.executeCommand('toggleFilmstrip', false)
+      
+      // Set audio/video state
+      if (startWithAudioMuted) {
+        api.executeCommand('toggleAudio')
+      }
+      if (startWithVideoMuted) {
+        api.executeCommand('toggleVideo')
+      }
+      
+      // Remove watermark from inside the iframe
+      setTimeout(() => {
+        try {
+          const iframe = document.querySelector('#jitsiConferenceFrame0') as HTMLIFrameElement
+          if (iframe && iframe.contentWindow) {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+            const watermarks = iframeDoc.querySelectorAll('[class*="watermark"], .watermark, .leftwatermark')
+            watermarks.forEach((el) => {
+              if (el instanceof HTMLElement) {
+                el.style.display = 'none'
+                el.style.visibility = 'hidden'
+                el.remove()
+              }
+            })
+            
+            // Add CSS to the iframe to prevent watermark from appearing
+            const style = iframeDoc.createElement('style')
+            style.textContent = `
+              .watermark,
+              .leftwatermark,
+              [class*="watermark"] {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+              }
+            `
+            iframeDoc.head.appendChild(style)
+          }
+        } catch (e) {
+          console.log('Could not access iframe content:', e)
+        }
+      }, 1000)
+      
+      // Keep checking and removing watermark
+      const interval = setInterval(() => {
+        try {
+          const iframe = document.querySelector('#jitsiConferenceFrame0') as HTMLIFrameElement
+          if (iframe && iframe.contentWindow) {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+            const watermarks = iframeDoc.querySelectorAll('[class*="watermark"], .watermark, .leftwatermark')
+            watermarks.forEach((el) => {
+              if (el instanceof HTMLElement) {
+                el.style.display = 'none'
+                el.remove()
+              }
+            })
+          }
+        } catch (e) {
+          // Ignore errors
+        }
+      }, 500)
+      
+      // Clean up interval after 10 seconds
+      setTimeout(() => clearInterval(interval), 10000)
     }
     onApiReady?.(api)
   }
 
-  const setupIframeStyles = (iframeDoc: Document) => {
-    if (iframeDoc.getElementById('jitsi-custom-hide-styles')) return
-
-    const style = iframeDoc.createElement('style')
-    style.id = 'jitsi-custom-hide-styles'
-    style.textContent = `
-      ${WATERMARK_SELECTORS},
-      .poweredby, [class*="powered"],
-      .toolbox, [class*="toolbox"],
-      .toolbar, [class*="toolbar"],
-      .filmstrip, [class*="filmstrip"],
-      .videocontainer__toolbar, [class*="videocontainer__toolbar"],
-      .connection-indicator, [class*="connection-indicator"],
-      .subject, [class*="subject"],
-      .header, [class*="header"],
-      .header-text, [class*="header-text"],
-      .videocontainer__background, .toolbox-content-wrapper, .videocontainer__background--dark {
-        ${HIDE_STYLES}
-      }
-      #jitsi-meet, body {
-        background: #000000 !important;
-      }
-    `
-    iframeDoc.head.appendChild(style)
-
-    const hideWatermarks = () => {
-      iframeDoc.querySelectorAll(WATERMARK_SELECTORS).forEach((el: Element) => {
-        const htmlEl = el as HTMLElement
-        Object.assign(htmlEl.style, {
-          display: 'none',
-          visibility: 'hidden',
-          opacity: '0',
-          height: '0',
-          width: '0',
-          overflow: 'hidden'
-        })
-      })
-    }
-
-    hideWatermarks()
-
-    const observer = new MutationObserver(hideWatermarks)
-    observer.observe(iframeDoc.body || iframeDoc.documentElement, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class', 'id']
-    })
-  }
-
   const config = {
-    startWithAudioMuted: false,
-    startWithVideoMuted: false,
+    startWithAudioMuted: startWithAudioMuted,
+    startWithVideoMuted: startWithVideoMuted,
     enableWelcomePage: false,
     disableDeepLinking: true,
     prejoinPageEnabled: false,
+    prejoinConfig: {
+      enabled: false,
+    },
+    skipPrejoin: true,
     disableInviteFunctions: true,
     enableLayerSuspension: true,
     enableNoAudioDetection: true,
-    enableNoisyMicDetection: true,
+    enableNoisyMicDetection: false,
     enableTalkWhileMuted: false,
     enableRemb: true,
     enableTcc: true,
@@ -100,19 +180,30 @@ export const JitsiMeet = ({
     disableThirdPartyRequests: false,
     defaultLanguage: 'en',
     disableRemoteMute: false,
-    enableClosePage: false,
+    enableClosePage: true,
     enableInsecureRoomNameWarning: false,
-    defaultBackground: '#000000'
+    defaultBackground: '#000000',
+    skipPrejoinButton: true,
+    requireDisplayName: false,
+    externalAPIEnabled: true,
+    // Additional settings to bypass pre-join
+    // prejoinPageEnabled: false,
+    disablePreJoinPageVideo: true,
+    disablePreJoinPageAudio: true,
+    autoKnockLobby: false,
+    enableLobbyChat: false,
+    // Disable watermarks
+    watermarkLink: '',
+    hideConferenceSubject: true,
+    hideConferenceTimer: false,
+    hideParticipantsStats: true
   }
 
   const interfaceConfig = {
-    // Toolbar settings
     TOOLBAR_BUTTONS: [],
     TOOLBAR_ALWAYS_VISIBLE: false,
     INITIAL_TOOLBAR_TIMEOUT: 0,
     TOOLBAR_TIMEOUT: 0,
-    
-    // Disable features
     DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
     DISABLE_FOCUS_INDICATOR: true,
     DISABLE_DOMINANT_SPEAKER_INDICATOR: true,
@@ -125,29 +216,19 @@ export const JitsiMeet = ({
     DISABLE_REMOTE_VIDEO_MENU: true,
     DISABLE_WELCOME_PAGE: true,
     DISABLE_PREJOIN_PAGE: true,
-    
-    // Hide watermarks and branding
     SHOW_JITSI_WATERMARK: false,
     SHOW_WATERMARK_FOR_GUESTS: false,
     SHOW_BRAND_WATERMARK: false,
     SHOW_POWERED_BY: false,
     SHOW_DEEP_LINKING_IMAGE: false,
-    
-    // Connection indicator
     CONNECTION_INDICATOR_AUTO_HIDE_ENABLED: true,
     CONNECTION_INDICATOR_AUTO_HIDE_TIMEOUT: 0,
     CONNECTION_INDICATOR_DISABLED: true,
-    
-    // App branding
     APP_NAME: APP_NAME,
     NATIVE_APP_NAME: APP_NAME,
     PROVIDER_NAME: APP_NAME,
-    
-    // Display names
     DEFAULT_REMOTE_DISPLAY_NAME: 'Participant',
     DEFAULT_LOCAL_DISPLAY_NAME: 'me',
-    
-    // Other settings
     SETTINGS_SECTIONS: [],
     HIDE_INVITE_MORE_HEADER: true,
     DEFAULT_BACKGROUND: '#000000',
@@ -166,19 +247,6 @@ export const JitsiMeet = ({
     MOBILE_APP_PROMO_TIMEOUT: 0
   }
 
-  const trySetupStyles = (iframe: HTMLIFrameElement) => {
-    try {
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
-      if (iframeDoc?.head) {
-        setupIframeStyles(iframeDoc)
-      } else {
-        setTimeout(() => trySetupStyles(iframe), 100)
-      }
-    } catch (e) {
-      console.log('Cannot access iframe content (cross-origin):', e)
-    }
-  }
-
   return (
     <div style={{ width: '100%', height: '100%', ...containerStyle }}>
       <JitsiMeeting
@@ -186,7 +254,10 @@ export const JitsiMeet = ({
         roomName={roomName}
         configOverwrite={config}
         interfaceConfigOverwrite={interfaceConfig}
-        {...(userInfo?.displayName ? { userInfo: { displayName: userInfo.displayName, email: userInfo.email || '' } } : {})}
+        userInfo={{
+          displayName: userInfo?.displayName || 'Provider',
+          email: userInfo?.email || ''
+        }}
         onApiReady={handleApiReady}
         getIFrameRef={(iframeRef) => {
           if (!iframeRef) return
@@ -199,9 +270,6 @@ export const JitsiMeet = ({
             borderRadius: '12px',
             background: '#000000'
           })
-          
-          iframe.onload = () => setTimeout(() => trySetupStyles(iframe), 200)
-          setTimeout(() => trySetupStyles(iframe), 500)
         }}
       />
     </div>

@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react'
 import './App.css'
 import videoMain from './assets/video-main.png'
 import { JitsiMeet } from './components/JitsiMeet'
+import { AppointmentSetup } from './components/AppointmentSetup'
 import { useJitsi } from './hooks/useJitsi'
 import {
   FlagIcon,
@@ -23,8 +25,11 @@ import {
 } from './assets/icons'
 
 function App() {
-  // Generate a unique room name (you can replace this with your own logic)
-  const roomName = `room-${Date.now()}`
+  const [appointmentStarted, setAppointmentStarted] = useState(false)
+  const [roomName, setRoomName] = useState(`room-${Date.now()}`)
+  const [displayName, setDisplayName] = useState('Provider')
+  const [startWithAudioMuted, setStartWithAudioMuted] = useState(false)
+  const [startWithVideoMuted, setStartWithVideoMuted] = useState(false)
   
   const {
     setApi,
@@ -43,9 +48,86 @@ function App() {
     roomName,
     domain: 'meet.migranium.com',
     userInfo: {
-      displayName: 'Provider',
+      displayName: displayName,
     },
   })
+
+  // Inject CSS to hide Jitsi pre-join screen and watermark
+  useEffect(() => {
+    if (appointmentStarted) {
+      const style = document.createElement('style')
+      style.id = 'jitsi-prejoin-hide'
+      style.textContent = `
+        /* Hide Jitsi pre-join/premeeting screen */
+        .css-1dtlqni-content,
+        .premeeting-screen,
+        .css-1a5i9rv-container,
+        [class*="premeeting"],
+        [class*="prejoin"],
+        [class*="Prejoin"],
+        [class*="PreMeeting"] {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          height: 0 !important;
+          width: 0 !important;
+          overflow: hidden !important;
+        }
+        
+        /* Hide Jitsi watermark */
+        .watermark,
+        div.watermark,
+        a.watermark,
+        [class*="watermark"],
+        [class*="Watermark"],
+        div[class*="leftwatermark"],
+        a[aria-label*="Jitsi Meet"],
+        a[class*="watermark"] {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+        }
+        
+        /* Ensure the meeting iframe is visible */
+        #jitsiConferenceFrame0 {
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+        
+        /* Hide any join meeting buttons that might appear */
+        [class*="joinButton"],
+        [class*="JoinButton"],
+        button[aria-label*="Join"],
+        button[aria-label*="join"] {
+          display: none !important;
+        }
+      `
+      document.head.appendChild(style)
+      
+      return () => {
+        const existingStyle = document.getElementById('jitsi-prejoin-hide')
+        if (existingStyle) {
+          document.head.removeChild(existingStyle)
+        }
+      }
+    }
+  }, [appointmentStarted])
+
+  const handleStartAppointment = (newRoomName: string, newDisplayName: string, audioEnabled: boolean, videoEnabled: boolean) => {
+    setRoomName(newRoomName)
+    setDisplayName(newDisplayName)
+    setStartWithAudioMuted(!audioEnabled)
+    setStartWithVideoMuted(!videoEnabled)
+    setAppointmentStarted(true)
+  }
+
+  // Show appointment setup screen first
+  if (!appointmentStarted) {
+    return <AppointmentSetup onStartAppointment={handleStartAppointment} defaultRoomName={roomName} />
+  }
+
+  // Show video call interface after appointment is started
   return (
     <div className="app-container">
       {/* Top Section - Patient Info and Actions */}
@@ -94,9 +176,11 @@ function App() {
                 roomName={roomName}
                 domain="meet.migranium.com"
                 userInfo={{
-                  displayName: 'Provider',
+                  displayName: displayName,
                 }}
                 onApiReady={setApi}
+                startWithAudioMuted={startWithAudioMuted}
+                startWithVideoMuted={startWithVideoMuted}
                 containerStyle={{
                   width: '100%',
                   height: '100%',

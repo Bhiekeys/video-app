@@ -25,3 +25,26 @@ body {
   width: 100%;
   min-height: 100vh;
 }
+
+/* Hide Jitsi pre-join screen */
+.css-1dtlqni-content,
+.premeeting-screen,
+[class*="premeeting"],
+[class*="prejoin"] {
+  display: none !important;
+}
+
+/* Ensure the meeting iframe is visible */
+#jitsiConferenceFrame0 {
+  display: block !important;
+}
+
+/* Hide Jitsi watermark - add to App.css */
+.watermark,
+div.watermark,
+a.watermark,
+[class*="watermark"],
+[class*="leftwatermark"] {
+  display: none !important;
+  visibility: hidden !important;
+}
