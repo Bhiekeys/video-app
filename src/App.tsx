@@ -129,9 +129,7 @@ function App() {
 
   // Show video call interface after appointment is started
   return (
-    <div className="app-container">
-      {/* Top Section - Patient Info and Actions */}
-     
+    <div className="app-container">     
       <div className="top-section">
         <div className="patient-info">
           <div className="patient-details">
@@ -168,7 +166,6 @@ function App() {
 
       {/* Video and Notes Section - Side by Side */}
       <div className="video-notes-container">
-        {/* Video Section */}
         <div className="video-section">
           <div className="video-main">
             <div className="jitsi-container">
@@ -262,8 +259,6 @@ function App() {
             </div>
           </div>
         </div>
-
-        {/* Notes Section */}
         <div className="notes-section">
           <div className="tabs">
             <button className="tab active">Notes</button>

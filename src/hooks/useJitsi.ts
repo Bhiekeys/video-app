@@ -9,7 +9,7 @@ interface UseJitsiOptions {
   }
 }
 
-export const useJitsi = ({ roomName, domain = 'meet.migranium.com', userInfo }: UseJitsiOptions) => {
+export const useJitsi = ({ roomName: _roomName, domain: _domain = 'meet.migranium.com', userInfo: _userInfo }: UseJitsiOptions) => {
   const [api, setApi] = useState<any>(null)
   const [isAudioMuted, setIsAudioMuted] = useState(false)
   const [isVideoMuted, setIsVideoMuted] = useState(false)
